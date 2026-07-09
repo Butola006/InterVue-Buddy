@@ -1,4 +1,4 @@
-# FullStackGenAi
+# InterVue-Buddy
 
 AI-powered interview prep and resume generation web app.
 
