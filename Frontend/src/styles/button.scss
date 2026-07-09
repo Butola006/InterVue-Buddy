@@ -1,0 +1,67 @@
+/* Base button styles */
+.button {
+
+    /* Remove default browser border */
+    border: none;
+
+    /* Remove outline shown on focus/click */
+    outline: none;
+
+    /* Left and right padding */
+    padding-inline: 1.5rem;
+
+    /* Top and bottom padding */
+    padding-block: 0.75rem;
+
+    /* Rounded corners */
+    border-radius: 1rem;
+
+    /* Hand cursor on hover */
+    cursor: pointer;
+
+    /* Smooth animation for changes */
+    transition: all 0.3s ease-in-out;
+
+    /* .button.primary-button */
+    &.primary-button {
+        background-color: #b2ea0c;
+        color: white;
+    }
+
+    /* .button.download-button - Vibrant lime-green with modern effects */
+    &.download-button {
+        background: linear-gradient(180deg, #b8ff00 0%, #9fe800 50%, #89d500 100%);
+        color: #0d1117;
+        font-weight: 600;
+        box-shadow: 0 18px 40px rgba(159, 232, 0, 0.2), inset 0 1px 0 rgba(255,255,255,0.35);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.8rem;
+        border: 1px solid rgba(159, 232, 0, 0.45);
+        backdrop-filter: blur(6px);
+
+        /* Hover state with lime-green intensification */
+        &:hover {
+            background: linear-gradient(180deg, #d6ff3d 0%, #c6ff00 50%, #9fe800 100%);
+            box-shadow: 0 20px 45px rgba(159, 232, 0, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Icon animation on hover */
+        svg {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        &:hover svg {
+            transform: translateY(2px) scale(1.08);
+        }
+    }
+
+    /* When button is being pressed */
+    &:active {
+        transform: scale(0.9);
+    }
+}

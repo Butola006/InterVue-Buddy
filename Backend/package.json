@@ -1,0 +1,29 @@
+{
+  "name": "fullstackgenai",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "build": "echo no build needed"
+  },
+  "dependencies": {
+    "@google/genai": "^2.8.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.6",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.5.0",
+    "multer": "^2.2.0",
+    "pdf-parse": "^2.4.5",
+    "puppeteer": "^25.3.0",
+    "zod": "^4.4.3",
+    "zod-to-json-schema": "^3.25.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
