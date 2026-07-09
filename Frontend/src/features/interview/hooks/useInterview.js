@@ -103,19 +103,20 @@ export const useInterview = () => {
             // Fetch all reports
             response = await getAllInterviewReports()
 
-            // Store reports globally
-            setReports(response.interviewReports)
+            // Store reports globally, handle unauthenticated users safely
+            setReports(response?.interviewReports ?? [])
 
         } catch (error) {
 
             console.log(error)
+            setReports([])
 
         } finally {
 
             setLoading(false)
         }
 
-        return response.interviewReports
+        return response?.interviewReports ?? []
     }
 
 
