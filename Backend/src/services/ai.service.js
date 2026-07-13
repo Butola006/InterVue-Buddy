@@ -285,7 +285,17 @@ async function generatePdfFromHtml({ htmlContent }) {
 
     // Launch headless Chrome
     const browser = await puppeteer.launch({
-        rgs: ['--no-sandbox', '--disable-setuid-sandbox'] // safer for prod/deploy
+         headless: "new",
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, // Necessary for some hostings
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--no-first-run",
+            "--no-zygote",
+            "--single-process" // Reduces memory usage on small servers
+        ],
     })
 
     // Open a new browser page

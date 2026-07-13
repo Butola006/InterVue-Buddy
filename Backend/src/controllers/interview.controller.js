@@ -178,72 +178,73 @@ async function getAllInterviewReportsController(req, res) {
 }
 
 /**
- * @description Controller to generate resume PDF based on user self description, resume and job description.
- */
-/**
  * @description Controller to generate resume PDF based on user's interview report.
+ * Updated with timeout handling and buffer safety.
  */
 async function generateResumePdfController(req, res) {
-
     try {
-        // Get interview report ID from URL parameters
-        const { interviewId } = req.params
+        // 1. INCREASE TIMEOUT: Prevents server/proxy from killing the connection 
+        // while Gemini AI + Puppeteer are working (highly recommended for Render/Vercel)
+        req.setTimeout(60000); 
+
+        const { interviewId } = req.params;
 
         // Fetch interview report from MongoDB
-        const interviewReport = await interviewReportModel.findById(interviewId)
+        const interviewReport = await interviewReportModel.findById(interviewId);
 
-        // Return 404 if report doesn't exist
         if (!interviewReport) {
-            return res.status(404).json({
-                message: "Interview report not found."
-            })
+            return res.status(404).json({ message: "Interview report not found." });
         }
 
-        // Extract required data for resume generation
-        const {
-            resume,
-            jobDescription,
-            selfDescription
-        } = interviewReport
+        const { resume, jobDescription, selfDescription } = interviewReport;
 
-        // Validate that we have enough data to generate resume
         if (!selfDescription || selfDescription.trim().length === 0) {
             return res.status(400).json({
                 message: "Cannot generate resume without self-description. Please regenerate the interview report."
-            })
+            });
         }
 
-        // Note: resume can be empty; AI will generate from selfDescription + jobDescription
         if (!resume || resume.trim().length === 0) {
-            console.warn(`⚠️ Generating resume without original resume text for report ${interviewId}. Using self-description only.`)
+            console.warn(`⚠️ Generating resume without original resume text for report ${interviewId}.`);
         }
 
-        // Generate PDF buffer using AI service
-        const pdfBuffer = Buffer.from(await generateResumePdf({
-                resume: resume || "", // Pass empty string if no resume
-                jobDescription,
-                selfDescription
-            })
-         )
+        // 2. GENERATE PDF: We await the buffer from the AI/Puppeteer service
+        const rawPdfData = await generateResumePdf({
+            resume: resume || "",
+            jobDescription,
+            selfDescription
+        });
 
-        // Tell browser that response is a downloadable PDF
+        if (!rawPdfData) {
+            throw new Error("PDF Service returned empty data");
+        }
+
+        const pdfBuffer = Buffer.from(rawPdfData);
+
+        // 3. SECURE RESPONSE: Set explicit headers and use .send() for binary data
         res.status(200)
             .set({
                 "Content-Type": "application/pdf",
-                "Content-Disposition": `attachment; filename=resume_${interviewId}.pdf`,
-                "Content-Length": pdfBuffer.length
+                "Content-Disposition": `attachment; filename="resume_${interviewId}.pdf"`,
+                "Content-Length": pdfBuffer.length,
+                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0",
             })
-            .end(pdfBuffer)
-    }
-    catch (error) {
-        console.error("Failed to generate resume PDF:", error)
-        
-        const statusCode = error?.statusCode || 500
-        const message = process.env.NODE_ENV === "production" 
-            ? "Failed to generate resume PDF"
-            : `Failed to generate resume PDF: ${error?.message || "unknown error"}`
+            .send(pdfBuffer); // .send() is more reliable than .end() for Buffers in Express
 
-        return res.status(statusCode).json({ message })
+    } catch (error) {
+        console.error("❌ Failed to generate resume PDF:", error);
+        
+        // Handle common AI/Timeout errors
+        const statusCode = error?.statusCode || error?.status || 500;
+        const isDev = process.env.NODE_ENV !== "production";
+        
+        const message = statusCode === 503 
+            ? "Service temporarily overloaded. Please try again in 30 seconds."
+            : (isDev ? `Failed to generate PDF: ${error.message}` : "Failed to generate resume PDF");
+
+        return res.status(statusCode).json({ message });
     }
 }
 export default {
