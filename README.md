@@ -90,4 +90,4 @@ The frontend reads the backend URL from `VITE_API_BASE_URL`.
 
 ## Authors
 
-- Developed by Aditya
+- Developed by Aditya Singh Butola
